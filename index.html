@@ -3,6 +3,7 @@
     <head>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
         <link rel="stylesheet" href="style.css">
+        <script defer src="script.js"></script>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Trello</title>
@@ -10,24 +11,111 @@
     <body>
         <h1 class="title is-2 has-text-centered pt-4">Gestor de tareas</h1 classtitle is-5=>
         <div class="buttons has-addons is-right">
-            <button class="button mr-1">Agregar Tarea</button>
+            <button class="button mr-1 is-primary" id="new-task-button">Agregar Tarea</button>
         </div>
-        <div class="columns mx-3">
-            <div class="column mr-2 hero is-fullheight-with-navbar box">
-                <span class="subtitle is-5 has-text-centered">Backlog</span>
+        <div class="columns mx-1 is-multiline">
+            <div class="column is-full is-one-third-tablet is-one-fifth-desktop hero is-fullheight box has-background-light" id="backlog">
+                <span class="subtitle is-5 has-text-centered pt-3">Backlog</span>
             </div>
-            <div class="column mr-2 hero is-fullheight box">
-                <span class="subtitle is-5 has-text-centered">To Do</span>
+            <div id="to-do" class="column is-full is-one-third-tablet is-one-fifth-desktop hero is-fullheight box has-background-light">
+                <span class="subtitle has-text-centered is-5">To Do</span>
+                <div class="task-list-content">
+                    <div class="box">
+                        <strong>Correr</strong>
+                        <p>Salir a correr</p>
+                    </div>
+                </div>
             </div>
-            <div class="column mr-2 hero is-fullheight box">
-                <span class="subtitle is-5 has-text-centered">In Progress</span>
+            <div class="column is-full is-one-third-tablet is-one-fifth-desktop hero is-fullheight box has-background-light" id="in-progress">
+                <span class="subtitle is-5 has-text-centered pt-3">In Progress</span>
             </div>
-            <div class="column mr-2 hero is-fullheight box">
-                <span class="subtitle is-5 has-text-centered">Blocked</span>
+            <div class="column is-full is-one-third-tablet is-one-fifth-desktop hero is-fullheight box has-background-light" id="blocked">
+                <span class="subtitle is-5 has-text-centered pt-3">Blocked</span>
             </div>
-            <div class="column mr-2 hero is-fullheight box">
-                <span class="subtitle is-5 has-text-centered">Done</span>
+            <div class="column is-full is-one-third-tablet is-one-fifth-desktop hero is-fullheight box has-background-light" id="done">
+                <span class="subtitle is-5 has-text-centered pt-3">Done</span>
             </div>
-        </div>   
+        </div>
+        
+        <div id="task-modal" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-content">
+                <div class="box">
+                    <form id="task-form">
+                        <div class="field">
+                            <label class="label">Título</label>
+                            <div class="control">
+                                <input id="task-title" class="input" type="text" placeholder="Título de la tarea">
+                            </div>
+                        </div>
+    
+                        <div class="field">
+                            <label class="label">Descripción</label>
+                            <div class="control">
+                                <textarea id="task-description" class="textarea" placeholder="Descripción de la tarea"></textarea>
+                            </div>
+                        </div>
+    
+                        <div class="field">
+                            <label class="label">Asignado</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="task-assigned">
+                                        <option>Persona 1</option>
+                                        <option>Persona 2</option>
+                                        <option>Persona 3</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="field">
+                            <label class="label">Prioridad</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="task-priority">
+                                        <option>Alta</option>
+                                        <option>Media</option>
+                                        <option>Baja</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="field">
+                            <label class="label">Estado</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="task-status">
+                                        <option>Backlog</option>
+                                        <option>To Do</option>
+                                        <option>In Progress</option>
+                                        <option>Blocked</option>
+                                        <option>Done</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="field">
+                            <label class="label">Fecha Límite</label>
+                            <div class="control">
+                                <input id="task-deadline" class="input" type="date">
+                            </div>
+                        </div>
+    
+                        <div class="field is-grouped">
+                            <div class="control">
+                                <button type="submit" class="button is-link">Guardar</button>
+                            </div>
+                            <div class="control">
+                                <button id="cancel-button" type="button" class="button is-light">Cancelar</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <button class="modal-close is-large" aria-label="close"></button>
+        </div>
     </body>
 </html>
