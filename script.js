@@ -20,6 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const editTaskPriority = document.getElementById('edit-task-priority');
     const editTaskStatus = document.getElementById('edit-task-status');
     const editTaskDeadline = document.getElementById('edit-task-deadline');
+    const eliminarTask = document.getElementById('eliminar-tarea');
+    const eliminarConfirmarModal = document.getElementById('confirmar-eliminar');
+    const siEliminar = document.getElementById('si-eliminar');
+    const noEliminar = document.getElementById('no-eliminar');
 
     let currentTaskDiv = null;
 
@@ -38,6 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function closeEditModal() {
         editTaskModal.classList.remove('is-active');
+    }
+
+    function closeConfirmModal() {
+        eliminarConfirmarModal.classList.remove('is-active');
     }
 
     taskForm.addEventListener('submit', (event) => {
@@ -90,6 +98,20 @@ document.addEventListener('DOMContentLoaded', () => {
         column.querySelector('.task-list-content').appendChild(currentTaskDiv);
         closeEditModal();
     });
+
+    eliminarTask.addEventListener('click', () => {
+        eliminarConfirmarModal.classList.add('is-active');
+        closeEditModal();
+    })
+
+    siEliminar.addEventListener('click', () => {
+        currentTaskDiv.remove();
+        closeConfirmModal();
+    })
+
+    noEliminar.addEventListener('click', () => {
+        closeConfirmModal();
+    })
 
     function clearForm() {
         taskTitle.value = '';
