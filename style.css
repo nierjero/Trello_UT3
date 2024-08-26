@@ -9,6 +9,19 @@
     overflow-y: auto;
 }
 
+.task-list-content::-webkit-scrollbar {
+    width: 5px;
+}
+
+.task-list-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.task-list-content::-webkit-scrollbar-thumb {
+    background: #888888;
+    border-radius: 6px;
+}
+
 #eliminar-tarea {
     margin-top: 5px;
     height: 20px;
