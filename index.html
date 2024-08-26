@@ -49,6 +49,7 @@
             <div class="modal-background"></div>
             <div class="modal-content">
                 <div class="box">
+                    <h1 class="title is-size-4 has-text-centered">Nueva tarea</h1>
                     <form id="task-form">
                         <div class="field">
                             <label class="label">Título</label>
@@ -118,6 +119,88 @@
                             </div>
                             <div class="control">
                                 <button id="cancel-button" type="button" class="button is-light">Cancelar</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <button class="modal-close is-large" aria-label="close"></button>
+        </div>
+
+        <div id="edit-task-modal" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-content">
+                <div class="box">
+                    <h1 class="title is-size-4 has-text-centered">Editar tarea</h1>
+                    <form id="edit-task-form">
+                        <div class="field">
+                            <label class="label">Título</label>
+                            <div class="control">
+                                <input id="edit-task-title" class="input" type="text" placeholder="Título de la tarea">
+                            </div>
+                        </div>
+    
+                        <div class="field">
+                            <label class="label">Descripción</label>
+                            <div class="control">
+                                <textarea id="edit-task-description" class="textarea" placeholder="Descripción de la tarea"></textarea>
+                            </div>
+                        </div>
+    
+                        <div class="field">
+                            <label class="label">Asignado</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="edit-task-assigned">
+                                        <option>Persona 1</option>
+                                        <option>Persona 2</option>
+                                        <option>Persona 3</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="field">
+                            <label class="label">Prioridad</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="edit-task-priority">
+                                        <option>Alta</option>
+                                        <option>Media</option>
+                                        <option>Baja</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="field">
+                            <label class="label">Estado</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="edit-task-status">
+                                        <option value="backlog">Backlog</option>
+                                        <option value="to-do">To Do</option>
+                                        <option value="in-progress">In Progress</option>
+                                        <option value="blocked">Blocked</option>
+                                        <option value="done">Done</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="field">
+                            <label class="label">Fecha Límite</label>
+                            <div class="control">
+                                <input id="edit-task-deadline" class="input" type="date">
+                            </div>
+                        </div>
+    
+                        <div class="field is-grouped">
+                            <div class="control">
+                                <button type="submit" class="button is-link">Guardar</button>
+                            </div>
+                            <div class="control">
+                                <button id="edit-cancel-button" type="button" class="button is-light">Cancelar</button>
                             </div>
                         </div>
                     </form>
