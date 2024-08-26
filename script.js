@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const taskDiv = document.createElement('div');
         taskDiv.className = 'box';
         taskDiv.innerHTML = `<strong>${taskTitle.value}</strong><p>${taskDescription.value}</p>`;
-        console.log(1);
         const column = document.getElementById(taskStatus.value.toLowerCase().replace(' ', '-'));
         column.querySelector('.task-list-content').appendChild(taskDiv);
 

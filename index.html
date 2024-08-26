@@ -16,6 +16,8 @@
         <div class="columns mx-1 is-multiline">
             <div class="column is-full is-one-third-tablet is-one-fifth-desktop hero is-fullheight box has-background-light" id="backlog">
                 <span class="subtitle is-5 has-text-centered pt-3">Backlog</span>
+                <div class="task-list-content">
+                </div>
             </div>
             <div id="to-do" class="column is-full is-one-third-tablet is-one-fifth-desktop hero is-fullheight box has-background-light">
                 <span class="subtitle has-text-centered is-5">To Do</span>
@@ -28,12 +30,18 @@
             </div>
             <div class="column is-full is-one-third-tablet is-one-fifth-desktop hero is-fullheight box has-background-light" id="in-progress">
                 <span class="subtitle is-5 has-text-centered pt-3">In Progress</span>
+                <div class="task-list-content">
+                </div>
             </div>
             <div class="column is-full is-one-third-tablet is-one-fifth-desktop hero is-fullheight box has-background-light" id="blocked">
                 <span class="subtitle is-5 has-text-centered pt-3">Blocked</span>
+                <div class="task-list-content">
+                </div>
             </div>
             <div class="column is-full is-one-third-tablet is-one-fifth-desktop hero is-fullheight box has-background-light" id="done">
                 <span class="subtitle is-5 has-text-centered pt-3">Done</span>
+                <div class="task-list-content">
+                </div>
             </div>
         </div>
         
@@ -87,11 +95,11 @@
                             <div class="control">
                                 <div class="select">
                                     <select id="task-status">
-                                        <option>Backlog</option>
-                                        <option>To Do</option>
-                                        <option>In Progress</option>
-                                        <option>Blocked</option>
-                                        <option>Done</option>
+                                        <option value="backlog">Backlog</option>
+                                        <option value="to-do">To Do</option>
+                                        <option value="in-progress">In Progress</option>
+                                        <option value="blocked">Blocked</option>
+                                        <option value="done">Done</option>
                                     </select>
                                 </div>
                             </div>
