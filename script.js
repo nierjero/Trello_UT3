@@ -6,7 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const editTaskModal = document.getElementById('edit-task-modal');
     const editCancelButton = document.getElementById('edit-cancel-button');
     const editTaskForm = document.getElementById('edit-task-form');
-    
+    const columns = document.querySelectorAll('.column');
+
     const taskTitle = document.getElementById('task-title');
     const taskDescription = document.getElementById('task-description');
     const taskAssigned = document.getElementById('task-assigned');
@@ -25,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const siEliminar = document.getElementById('si-eliminar');
     const noEliminar = document.getElementById('no-eliminar');
 
+    loadTasks();
     let currentTaskDiv = null;
 
     newTaskButton.addEventListener('click', () => {
@@ -59,18 +61,63 @@ document.addEventListener('DOMContentLoaded', () => {
         taskDiv.setAttribute('data-priority', taskPriority.value);
         taskDiv.setAttribute('data-status', taskStatus.value);
         taskDiv.setAttribute('data-deadline', taskDeadline.value);
+        taskDiv.setAttribute('draggable', 'true');
         taskDiv.innerHTML = `<strong>${taskTitle.value}</strong><p>${taskDescription.value}</p>`;
-        const column = document.getElementById(taskStatus.value.toLowerCase().replace(' ', '-'));
+
+        const column = document.getElementById(taskStatus.value);
         column.querySelector('.task-list-content').appendChild(taskDiv);
+
+        taskDiv.addEventListener('dragstart', () => {
+            taskDiv.classList.add('is-dragging');
+        });
+
+        taskDiv.addEventListener('dragend', () => {
+            taskDiv.classList.remove('is-dragging');
+            saveTasks();
+        });
 
         taskDiv.addEventListener('click', () => openEditModal(taskDiv));
 
         closeModal();
     });
 
-    function openEditModal(taskDiv) {
-        event.preventDefault();
+    columns.forEach(column => {
+        column.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(column, e.clientY);
+            const taskList = column.querySelector('.task-list-content');
+            const draggingTask = document.querySelector('.is-dragging');
+            if (afterElement == null) {
+                taskList.appendChild(draggingTask);
+            } else {
+                taskList.insertBefore(draggingTask, afterElement);
+            }
+        });
 
+        column.addEventListener('drop', (e) => {
+            const draggingTask = document.querySelector('.is-dragging');
+            if (draggingTask) {
+                const newStatus = column.id;
+                draggingTask.setAttribute('data-status', newStatus);
+                saveTasks(); // Save tasks after drop
+            }
+        });
+    });
+
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.box:not(.is-dragging)')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    function openEditModal(taskDiv) {
         currentTaskDiv = taskDiv;
         editTaskTitle.value = taskDiv.getAttribute('data-title');
         editTaskDescription.value = taskDiv.getAttribute('data-description');
@@ -78,9 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
         editTaskPriority.value = taskDiv.getAttribute('data-priority');
         editTaskStatus.value = taskDiv.getAttribute('data-status');
         editTaskDeadline.value = taskDiv.getAttribute('data-deadline');
-
-        
-
         editTaskModal.classList.add('is-active');
     }
 
@@ -93,9 +137,14 @@ document.addEventListener('DOMContentLoaded', () => {
         currentTaskDiv.setAttribute('data-priority', editTaskPriority.value);
         currentTaskDiv.setAttribute('data-status', editTaskStatus.value);
         currentTaskDiv.setAttribute('data-deadline', editTaskDeadline.value);
-        currentTaskDiv.innerHTML = `<strong>${currentTaskDiv.getAttribute('data-title')}</strong><p>${currentTaskDiv.getAttribute('data-description')}</p>`;
-        const column = document.getElementById(currentTaskDiv.getAttribute('data-status').toLowerCase().replace(' ', '-'));
-        column.querySelector('.task-list-content').appendChild(currentTaskDiv);
+        currentTaskDiv.innerHTML = `<strong>${editTaskTitle.value}</strong><p>${editTaskDescription.value}</p>`;
+
+        const column = document.getElementById(editTaskStatus.value);
+        if (column) {
+            column.querySelector('.task-list-content').appendChild(currentTaskDiv);
+        }
+
+        saveTasks(); // Save tasks after editing
         closeEditModal();
     });
 
@@ -120,5 +169,56 @@ document.addEventListener('DOMContentLoaded', () => {
         taskPriority.selectedIndex = 0;
         taskStatus.selectedIndex = 0;
         taskDeadline.value = '';
+    }
+
+    function saveTasks() {
+        const tasks = [];
+        columns.forEach(column => {
+            const taskDivs = column.querySelectorAll('.box');
+            taskDivs.forEach(taskDiv => {
+                tasks.push({
+                    title: taskDiv.getAttribute('data-title'),
+                    description: taskDiv.getAttribute('data-description'),
+                    assigned: taskDiv.getAttribute('data-assigned'),
+                    priority: taskDiv.getAttribute('data-priority'),
+                    status: taskDiv.getAttribute('data-status'),
+                    deadline: taskDiv.getAttribute('data-deadline'),
+                    columnId: column.id // Store the column ID
+                });
+            });
+        });
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function loadTasks() {
+        const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        tasks.forEach(task => {
+            const taskDiv = document.createElement('div');
+            taskDiv.className = 'box';
+            taskDiv.setAttribute('data-title', task.title);
+            taskDiv.setAttribute('data-description', task.description);
+            taskDiv.setAttribute('data-assigned', task.assigned);
+            taskDiv.setAttribute('data-priority', task.priority);
+            taskDiv.setAttribute('data-status', task.status);
+            taskDiv.setAttribute('data-deadline', task.deadline);
+            taskDiv.setAttribute('draggable', 'true');
+            taskDiv.innerHTML = `<strong>${task.title}</strong><p>${task.description}</p>`;
+
+            const column = document.getElementById(task.status); // Retrieve the column by status
+            if (column) {
+                column.querySelector('.task-list-content').appendChild(taskDiv);
+
+                taskDiv.addEventListener('dragstart', () => {
+                    taskDiv.classList.add('is-dragging');
+                });
+
+                taskDiv.addEventListener('dragend', () => {
+                    taskDiv.classList.remove('is-dragging');
+                    saveTasks();
+                });
+
+                taskDiv.addEventListener('click', () => openEditModal(taskDiv));
+            }
+        });
     }
 });
