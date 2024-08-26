@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (draggingTask) {
                 const newStatus = column.id;
                 draggingTask.setAttribute('data-status', newStatus);
-                saveTasks(); // Save tasks after drop
+                saveTasks(); 
             }
         });
     });
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             column.querySelector('.task-list-content').appendChild(currentTaskDiv);
         }
 
-        saveTasks(); // Save tasks after editing
+        saveTasks();
         closeEditModal();
     });
 
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     priority: taskDiv.getAttribute('data-priority'),
                     status: taskDiv.getAttribute('data-status'),
                     deadline: taskDiv.getAttribute('data-deadline'),
-                    columnId: column.id // Store the column ID
+                    columnId: column.id 
                 });
             });
         });
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
             taskDiv.setAttribute('draggable', 'true');
             taskDiv.innerHTML = `<strong>${task.title}</strong><p>${task.description}</p>`;
 
-            const column = document.getElementById(task.status); // Retrieve the column by status
+            const column = document.getElementById(task.status);
             if (column) {
                 column.querySelector('.task-list-content').appendChild(taskDiv);
 
