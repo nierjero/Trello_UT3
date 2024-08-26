@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelButton.addEventListener('click', closeModal);
     document.querySelector('.modal-close').addEventListener('click', closeModal);
     editCancelButton.addEventListener('click', closeEditModal);
+    document.getElementById('edit-modal-close').addEventListener('click', closeEditModal);
 
     function closeModal() {
         taskModal.classList.remove('is-active');
