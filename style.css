@@ -27,3 +27,41 @@
     height: 20px;
     width: 20px;
 }
+
+.columns.board {
+    display: flex;
+    justify-content: space-around;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 30px;
+}
+
+.columns.board >.column.custom-column {
+    width: 290px;    
+}
+
+.position {
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    bottom: 10px;
+    left: 100px;
+}
+
+@media (width > 767px) {
+    .columns.board {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;        
+    }
+}
+
+@media (width > 1023px) {
+    .columns.board {
+        display: flex;
+        justify-content: space-around;
+        flex-direction: row;
+        align-items: center;
+    }
+}

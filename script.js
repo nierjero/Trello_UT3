@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const newTaskButton = document.getElementById('new-task-button');
+    const newTaskButtonMobile = document.getElementById('new-task-button-mobile');
     const taskModal = document.getElementById('task-modal');
     const cancelButton = document.getElementById('cancel-button');
     const taskForm = document.getElementById('task-form');
@@ -30,6 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTaskDiv = null;
 
     newTaskButton.addEventListener('click', () => {
+        clearForm();
+        taskModal.classList.add('is-active');
+    });
+
+    newTaskButtonMobile.addEventListener('click', () => {
         clearForm();
         taskModal.classList.add('is-active');
     });
