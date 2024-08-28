@@ -46,7 +46,6 @@
     justify-content: center;
     align-items: center;
     bottom: 10px;
-    left: 100px;
 }
 
 @media (width > 767px) {
@@ -63,5 +62,17 @@
         justify-content: space-around;
         flex-direction: row;
         align-items: center;
+    }
+}
+
+@media (width > 1439px) {
+    .columns.board > .column.custom-column{
+        margin-left: 1.5%;
+        margin-right: 1.5%;
+    }
+    .board.columns.mx-1.is-multiline {
+        overflow-x: auto;
+        white-space: nowrap;
+        flex-wrap: nowrap;
     }
 }
