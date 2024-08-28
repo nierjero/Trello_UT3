@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         taskDiv.addEventListener('click', () => openEditModal(taskDiv));
 
+        saveTasks();
         closeModal();
     });
 
