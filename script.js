@@ -31,6 +31,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentTaskDiv = null;
 
+    // Convierte el formato DD/MM/YYYY a YYYY-MM-DD
+    function convertDateToApiFormat(dateStr) {
+        if (!dateStr) return '';
+        const [day, month, year] = dateStr.split('/');
+        return `${year}-${month}-${day}`;
+    }
+    
+    // Convierte el formato YYYY-MM-DD a DD/MM/YYYY para el campo de entrada
+    function convertDateToInputFormat(dateStr) {
+        if (!dateStr) return '';
+        const [year, month, day] = dateStr.split('-');
+        return `${day}/${month}/${year}`;
+    }
+    
+    // Formatea la fecha antes de asignarla a un atributo de datos
+    function formatDateForDataAttribute(dateStr) {
+        return dateStr.includes('/') ? convertDateToApiFormat(dateStr) : dateStr;
+    }
+
     loadTasks();
 
     newTaskButton.addEventListener('click', () => {
@@ -66,10 +85,10 @@ document.addEventListener('DOMContentLoaded', () => {
         taskDiv.setAttribute('data-id', task.id);
         taskDiv.setAttribute('data-title', task.title);
         taskDiv.setAttribute('data-description', task.description);
-        taskDiv.setAttribute('data-assigned', task.assigned);
+        taskDiv.setAttribute('data-assigned', task.assignedTo);
         taskDiv.setAttribute('data-priority', task.priority);
         taskDiv.setAttribute('data-status', task.status);
-        taskDiv.setAttribute('data-deadline', task.deadline);
+        taskDiv.setAttribute('data-deadline', formatDateForDataAttribute(task.endDate)); 
         taskDiv.setAttribute('draggable', 'true');
         taskDiv.innerHTML = `<strong>${task.title}</strong><p>${task.description}</p>`;
 
@@ -88,10 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadTasks() {
-        fetch(apiUrl+'tasks')
+        fetch(apiUrl + 'tasks')
             .then(response => response.json())
             .then(data => {
-                console.log('Loaded tasks:', data); 
+                console.log('Loaded tasks:', data);
                 data.forEach(task => {
                     const taskDiv = createTaskDiv(task);
                     const column = document.getElementById(task.status);
@@ -104,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addTask(task) {
-        fetch(apiUrl, {
+        fetch(apiUrl + 'tasks', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -113,36 +132,38 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Loaded tasks:', data); // Imprime los datos cargados
-            data.forEach(task => {
-                const taskDiv = createTaskDiv(task);
-                const column = document.getElementById(task.status);
-                if (column) {
-                    column.querySelector('.task-list-content').appendChild(taskDiv);
-                }
-            });
+            console.log('Added task:', data);
+            const taskDiv = createTaskDiv(data);
+            const column = document.getElementById(data.status);
+            if (column) {
+                column.querySelector('.task-list-content').appendChild(taskDiv);
+            }
         })
-        .catch(error => console.error('Error loading tasks:', error));
+        .catch(error => console.error('Error adding task:', error));
     }
 
     function updateTask(taskDiv) {
         const id = taskDiv.getAttribute('data-id');
         const updatedTask = {
-            id,
-            title: taskDiv.getAttribute('data-title'),
-            description: taskDiv.getAttribute('data-description'),
-            assigned: taskDiv.getAttribute('data-assigned'),
-            priority: taskDiv.getAttribute('data-priority'),
-            status: taskDiv.getAttribute('data-status'),
-            deadline: taskDiv.getAttribute('data-deadline'),
+            title: editTaskTitle.value,
+            description: editTaskDescription.value,
+            assignedTo: editTaskAssigned.value,
+            priority: editTaskPriority.value,
+            status: editTaskStatus.value,
+            endDate: convertDateToApiFormat(editTaskDeadline.value),
         };
-
-        fetch(`${apiUrl}/${id}`, {
+    
+        fetch(`${apiUrl}tasks/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(updatedTask)
+        })
+        .then(response => response.json())
+        .then(updatedTask => {
+            console.log('Task updated:', updatedTask);
+            updateTaskDivAttributes(taskDiv, updatedTask);
         })
         .catch(error => console.error('Error updating task:', error));
     }
@@ -150,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function deleteTask(taskDiv) {
         const id = taskDiv.getAttribute('data-id');
 
-        fetch(`${apiUrl}/${id}`, {
+        fetch(`${apiUrl}tasks/${id}`, {
             method: 'DELETE'
         })
         .then(() => {
@@ -166,25 +187,25 @@ document.addEventListener('DOMContentLoaded', () => {
         editTaskAssigned.value = taskDiv.getAttribute('data-assigned');
         editTaskPriority.value = taskDiv.getAttribute('data-priority');
         editTaskStatus.value = taskDiv.getAttribute('data-status');
-        editTaskDeadline.value = taskDiv.getAttribute('data-deadline');
+        // Convierte la fecha del formato YYYY-MM-DD al formato DD/MM/YYYY para mostrar
+        editTaskDeadline.value = convertDateToInputFormat(taskDiv.getAttribute('data-deadline')); 
         editTaskModal.classList.add('is-active');
     }
-
+    
     editTaskForm.addEventListener('submit', (event) => {
         event.preventDefault();
-
+    
         if (currentTaskDiv) {
             const updatedTask = {
-                id: currentTaskDiv.getAttribute('data-id'),
                 title: editTaskTitle.value,
                 description: editTaskDescription.value,
-                assigned: editTaskAssigned.value,
+                assignedTo: editTaskAssigned.value,
                 priority: editTaskPriority.value,
                 status: editTaskStatus.value,
-                deadline: editTaskDeadline.value,
+                endDate: convertDateToApiFormat(editTaskDeadline.value),
             };
-
-            updateTask(currentTaskDiv);
+    
+            updateTask(currentTaskDiv); // Asegúrate de que esta función se llama correctamente
             updateTaskDivAttributes(currentTaskDiv, updatedTask);
             closeEditModal();
         }
@@ -211,19 +232,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function clearForm() {
         taskTitle.value = '';
         taskDescription.value = '';
-        taskAssigned.selectedIndex = 0;
-        taskPriority.selectedIndex = 0;
+        taskAssigned.selectedIndex = 0; 
+        taskPriority.selectedIndex = 0; 
         taskStatus.selectedIndex = 0;
-        taskDeadline.value = '';
+        taskDeadline.value = ''; 
     }
 
     function updateTaskDivAttributes(taskDiv, task) {
         taskDiv.setAttribute('data-title', task.title);
         taskDiv.setAttribute('data-description', task.description);
-        taskDiv.setAttribute('data-assigned', task.assigned);
-        taskDiv.setAttribute('data-priority', task.priority);
+        taskDiv.setAttribute('data-assigned', task.assignedTo);     
+        taskDiv.setAttribute('data-priority', task.priority); 
         taskDiv.setAttribute('data-status', task.status);
-        taskDiv.setAttribute('data-deadline', task.deadline);
+        taskDiv.setAttribute('data-deadline', formatDateForDataAttribute(task.endDate));  
         taskDiv.innerHTML = `<strong>${task.title}</strong><p>${task.description}</p>`;
     }
 
@@ -250,9 +271,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    function getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.box:not(.is-dragging)')];
-        return draggableElements.reduce((closest, child) => {
+    function getDragAfterElement(column, y) {
+        const taskElements = [...column.querySelectorAll('.task-list-content .box:not(.is-dragging)')];
+
+        return taskElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
             const offset = y - box.top - box.height / 2;
             if (offset < 0 && offset > closest.offset) {
