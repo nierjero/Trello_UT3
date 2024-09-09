@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newTaskButtonMobile = document.getElementById('new-task-button-mobile');
     const taskModal = document.getElementById('task-modal');
     const cancelButton = document.getElementById('cancel-button');
-    const taskForm = document.getElementById('task-form');
+    const taskForm = document.getElementById('task-form'); 
     const editTaskModal = document.getElementById('edit-task-modal');
     const editCancelButton = document.getElementById('edit-cancel-button');
     const editTaskForm = document.getElementById('edit-task-form');
@@ -31,21 +31,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentTaskDiv = null;
 
-    // Convierte el formato DD/MM/YYYY a YYYY-MM-DD
     function convertDateToApiFormat(dateStr) {
         if (!dateStr) return '';
         const [day, month, year] = dateStr.split('/');
         return `${year}-${month}-${day}`;
     }
     
-    // Convierte el formato YYYY-MM-DD a DD/MM/YYYY para el campo de entrada
     function convertDateToInputFormat(dateStr) {
         if (!dateStr) return '';
         const [year, month, day] = dateStr.split('-');
         return `${day}/${month}/${year}`;
     }
     
-    // Formatea la fecha antes de asignarla a un atributo de datos
     function formatDateForDataAttribute(dateStr) {
         return dateStr.includes('/') ? convertDateToApiFormat(dateStr) : dateStr;
     }
@@ -91,20 +88,21 @@ document.addEventListener('DOMContentLoaded', () => {
         taskDiv.setAttribute('data-deadline', formatDateForDataAttribute(task.endDate)); 
         taskDiv.setAttribute('draggable', 'true');
         taskDiv.innerHTML = `<strong>${task.title}</strong><p>${task.description}</p>`;
-
+    
         taskDiv.addEventListener('dragstart', () => {
             taskDiv.classList.add('is-dragging');
         });
-
+    
         taskDiv.addEventListener('dragend', () => {
             taskDiv.classList.remove('is-dragging');
-            updateTask(taskDiv);
+            
         });
-
+    
         taskDiv.addEventListener('click', () => openEditModal(taskDiv));
-
+    
         return taskDiv;
     }
+    
 
     function loadTasks() {
         fetch(apiUrl + 'tasks')
@@ -121,6 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(error => console.error('Error loading tasks:', error));
     }
+    
 
     function addTask(task) {
         fetch(apiUrl + 'tasks', {
@@ -145,12 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateTask(taskDiv) {
         const id = taskDiv.getAttribute('data-id');
         const updatedTask = {
-            title: editTaskTitle.value,
-            description: editTaskDescription.value,
-            assignedTo: editTaskAssigned.value,
-            priority: editTaskPriority.value,
-            status: editTaskStatus.value,
-            endDate: convertDateToApiFormat(editTaskDeadline.value),
+            title: taskDiv.getAttribute('data-title'),
+            description: taskDiv.getAttribute('data-description'),
+            assignedTo: taskDiv.getAttribute('data-assigned'),
+            priority: taskDiv.getAttribute('data-priority'),
+            status: taskDiv.getAttribute('data-status'), // Asegúrate de que el estado se actualiza
+            endDate: convertDateToApiFormat(taskDiv.getAttribute('data-deadline')),
         };
     
         fetch(`${apiUrl}tasks/${id}`, {
@@ -187,14 +186,29 @@ document.addEventListener('DOMContentLoaded', () => {
         editTaskAssigned.value = taskDiv.getAttribute('data-assigned');
         editTaskPriority.value = taskDiv.getAttribute('data-priority');
         editTaskStatus.value = taskDiv.getAttribute('data-status');
-        // Convierte la fecha del formato YYYY-MM-DD al formato DD/MM/YYYY para mostrar
         editTaskDeadline.value = convertDateToInputFormat(taskDiv.getAttribute('data-deadline')); 
         editTaskModal.classList.add('is-active');
     }
-    
+
+    taskForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const newTask = {
+            title: taskTitle.value,
+            description: taskDescription.value,
+            assignedTo: taskAssigned.value,
+            priority: taskPriority.value,
+            status: taskStatus.value,
+            endDate: convertDateToApiFormat(taskDeadline.value),
+        };
+
+        addTask(newTask);
+        closeModal();
+    });
+
     editTaskForm.addEventListener('submit', (event) => {
         event.preventDefault();
-    
+
         if (currentTaskDiv) {
             const updatedTask = {
                 title: editTaskTitle.value,
@@ -204,8 +218,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 status: editTaskStatus.value,
                 endDate: convertDateToApiFormat(editTaskDeadline.value),
             };
-    
-            updateTask(currentTaskDiv); // Asegúrate de que esta función se llama correctamente
+
+            updateTask(currentTaskDiv); 
             updateTaskDivAttributes(currentTaskDiv, updatedTask);
             closeEditModal();
         }
@@ -266,9 +280,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (draggingTask) {
                 const newStatus = column.id;
                 draggingTask.setAttribute('data-status', newStatus);
-                updateTask(draggingTask);
+                updateTask(draggingTask);  
             }
         });
+        
     });
 
     function getDragAfterElement(column, y) {
@@ -284,4 +299,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
+    
+
 });
