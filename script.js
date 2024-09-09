@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const apiUrl = 'http://localhost:3000/api/';
+
     const newTaskButton = document.getElementById('new-task-button');
     const newTaskButtonMobile = document.getElementById('new-task-button-mobile');
     const taskModal = document.getElementById('task-modal');
@@ -27,8 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const siEliminar = document.getElementById('si-eliminar');
     const noEliminar = document.getElementById('no-eliminar');
 
-    loadTasks();
     let currentTaskDiv = null;
+
+    loadTasks();
 
     newTaskButton.addEventListener('click', () => {
         clearForm();
@@ -57,22 +60,18 @@ document.addEventListener('DOMContentLoaded', () => {
         eliminarConfirmarModal.classList.remove('is-active');
     }
 
-    taskForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-
+    function createTaskDiv(task) {
         const taskDiv = document.createElement('div');
         taskDiv.className = 'box';
-        taskDiv.setAttribute('data-title', taskTitle.value);
-        taskDiv.setAttribute('data-description', taskDescription.value);
-        taskDiv.setAttribute('data-assigned', taskAssigned.value);
-        taskDiv.setAttribute('data-priority', taskPriority.value);
-        taskDiv.setAttribute('data-status', taskStatus.value);
-        taskDiv.setAttribute('data-deadline', taskDeadline.value);
+        taskDiv.setAttribute('data-id', task.id);
+        taskDiv.setAttribute('data-title', task.title);
+        taskDiv.setAttribute('data-description', task.description);
+        taskDiv.setAttribute('data-assigned', task.assigned);
+        taskDiv.setAttribute('data-priority', task.priority);
+        taskDiv.setAttribute('data-status', task.status);
+        taskDiv.setAttribute('data-deadline', task.deadline);
         taskDiv.setAttribute('draggable', 'true');
-        taskDiv.innerHTML = `<strong>${taskTitle.value}</strong><p>${taskDescription.value}</p>`;
-
-        const column = document.getElementById(taskStatus.value);
-        column.querySelector('.task-list-content').appendChild(taskDiv);
+        taskDiv.innerHTML = `<strong>${task.title}</strong><p>${task.description}</p>`;
 
         taskDiv.addEventListener('dragstart', () => {
             taskDiv.classList.add('is-dragging');
@@ -80,14 +79,153 @@ document.addEventListener('DOMContentLoaded', () => {
 
         taskDiv.addEventListener('dragend', () => {
             taskDiv.classList.remove('is-dragging');
-            saveTasks();
+            updateTask(taskDiv);
         });
 
         taskDiv.addEventListener('click', () => openEditModal(taskDiv));
 
-        saveTasks();
-        closeModal();
+        return taskDiv;
+    }
+
+    function loadTasks() {
+        fetch(apiUrl+'tasks')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Loaded tasks:', data); 
+                data.forEach(task => {
+                    const taskDiv = createTaskDiv(task);
+                    const column = document.getElementById(task.status);
+                    if (column) {
+                        column.querySelector('.task-list-content').appendChild(taskDiv);
+                    }
+                });
+            })
+            .catch(error => console.error('Error loading tasks:', error));
+    }
+
+    function addTask(task) {
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(task)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Loaded tasks:', data); // Imprime los datos cargados
+            data.forEach(task => {
+                const taskDiv = createTaskDiv(task);
+                const column = document.getElementById(task.status);
+                if (column) {
+                    column.querySelector('.task-list-content').appendChild(taskDiv);
+                }
+            });
+        })
+        .catch(error => console.error('Error loading tasks:', error));
+    }
+
+    function updateTask(taskDiv) {
+        const id = taskDiv.getAttribute('data-id');
+        const updatedTask = {
+            id,
+            title: taskDiv.getAttribute('data-title'),
+            description: taskDiv.getAttribute('data-description'),
+            assigned: taskDiv.getAttribute('data-assigned'),
+            priority: taskDiv.getAttribute('data-priority'),
+            status: taskDiv.getAttribute('data-status'),
+            deadline: taskDiv.getAttribute('data-deadline'),
+        };
+
+        fetch(`${apiUrl}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedTask)
+        })
+        .catch(error => console.error('Error updating task:', error));
+    }
+
+    function deleteTask(taskDiv) {
+        const id = taskDiv.getAttribute('data-id');
+
+        fetch(`${apiUrl}/${id}`, {
+            method: 'DELETE'
+        })
+        .then(() => {
+            taskDiv.remove();
+        })
+        .catch(error => console.error('Error deleting task:', error));
+    }
+
+    function openEditModal(taskDiv) {
+        currentTaskDiv = taskDiv;
+        editTaskTitle.value = taskDiv.getAttribute('data-title');
+        editTaskDescription.value = taskDiv.getAttribute('data-description');
+        editTaskAssigned.value = taskDiv.getAttribute('data-assigned');
+        editTaskPriority.value = taskDiv.getAttribute('data-priority');
+        editTaskStatus.value = taskDiv.getAttribute('data-status');
+        editTaskDeadline.value = taskDiv.getAttribute('data-deadline');
+        editTaskModal.classList.add('is-active');
+    }
+
+    editTaskForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        if (currentTaskDiv) {
+            const updatedTask = {
+                id: currentTaskDiv.getAttribute('data-id'),
+                title: editTaskTitle.value,
+                description: editTaskDescription.value,
+                assigned: editTaskAssigned.value,
+                priority: editTaskPriority.value,
+                status: editTaskStatus.value,
+                deadline: editTaskDeadline.value,
+            };
+
+            updateTask(currentTaskDiv);
+            updateTaskDivAttributes(currentTaskDiv, updatedTask);
+            closeEditModal();
+        }
     });
+
+    eliminarTask.addEventListener('click', () => {
+        if (currentTaskDiv) {
+            eliminarConfirmarModal.classList.add('is-active');
+            closeEditModal();
+        }
+    });
+
+    siEliminar.addEventListener('click', () => {
+        if (currentTaskDiv) {
+            deleteTask(currentTaskDiv);
+            closeConfirmModal();
+        }
+    });
+
+    noEliminar.addEventListener('click', () => {
+        closeConfirmModal();
+    });
+
+    function clearForm() {
+        taskTitle.value = '';
+        taskDescription.value = '';
+        taskAssigned.selectedIndex = 0;
+        taskPriority.selectedIndex = 0;
+        taskStatus.selectedIndex = 0;
+        taskDeadline.value = '';
+    }
+
+    function updateTaskDivAttributes(taskDiv, task) {
+        taskDiv.setAttribute('data-title', task.title);
+        taskDiv.setAttribute('data-description', task.description);
+        taskDiv.setAttribute('data-assigned', task.assigned);
+        taskDiv.setAttribute('data-priority', task.priority);
+        taskDiv.setAttribute('data-status', task.status);
+        taskDiv.setAttribute('data-deadline', task.deadline);
+        taskDiv.innerHTML = `<strong>${task.title}</strong><p>${task.description}</p>`;
+    }
 
     columns.forEach(column => {
         column.addEventListener('dragover', (e) => {
@@ -107,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (draggingTask) {
                 const newStatus = column.id;
                 draggingTask.setAttribute('data-status', newStatus);
-                saveTasks(); 
+                updateTask(draggingTask);
             }
         });
     });
@@ -123,110 +261,5 @@ document.addEventListener('DOMContentLoaded', () => {
                 return closest;
             }
         }, { offset: Number.NEGATIVE_INFINITY }).element;
-    }
-
-    function openEditModal(taskDiv) {
-        currentTaskDiv = taskDiv;
-        editTaskTitle.value = taskDiv.getAttribute('data-title');
-        editTaskDescription.value = taskDiv.getAttribute('data-description');
-        editTaskAssigned.value = taskDiv.getAttribute('data-assigned');
-        editTaskPriority.value = taskDiv.getAttribute('data-priority');
-        editTaskStatus.value = taskDiv.getAttribute('data-status');
-        editTaskDeadline.value = taskDiv.getAttribute('data-deadline');
-        editTaskModal.classList.add('is-active');
-    }
-
-    editTaskForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-
-        currentTaskDiv.setAttribute('data-title', editTaskTitle.value);
-        currentTaskDiv.setAttribute('data-description', editTaskDescription.value);
-        currentTaskDiv.setAttribute('data-assigned', editTaskAssigned.value);
-        currentTaskDiv.setAttribute('data-priority', editTaskPriority.value);
-        currentTaskDiv.setAttribute('data-status', editTaskStatus.value);
-        currentTaskDiv.setAttribute('data-deadline', editTaskDeadline.value);
-        currentTaskDiv.innerHTML = `<strong>${editTaskTitle.value}</strong><p>${editTaskDescription.value}</p>`;
-
-        const column = document.getElementById(editTaskStatus.value);
-        if (column) {
-            column.querySelector('.task-list-content').appendChild(currentTaskDiv);
-        }
-
-        saveTasks();
-        closeEditModal();
-    });
-
-    eliminarTask.addEventListener('click', () => {
-        eliminarConfirmarModal.classList.add('is-active');
-        closeEditModal();
-    })
-
-    siEliminar.addEventListener('click', () => {
-        currentTaskDiv.remove();
-        closeConfirmModal();
-    })
-
-    noEliminar.addEventListener('click', () => {
-        closeConfirmModal();
-    })
-
-    function clearForm() {
-        taskTitle.value = '';
-        taskDescription.value = '';
-        taskAssigned.selectedIndex = 0;
-        taskPriority.selectedIndex = 0;
-        taskStatus.selectedIndex = 0;
-        taskDeadline.value = '';
-    }
-
-    function saveTasks() {
-        const tasks = [];
-        columns.forEach(column => {
-            const taskDivs = column.querySelectorAll('.box');
-            taskDivs.forEach(taskDiv => {
-                tasks.push({
-                    title: taskDiv.getAttribute('data-title'),
-                    description: taskDiv.getAttribute('data-description'),
-                    assigned: taskDiv.getAttribute('data-assigned'),
-                    priority: taskDiv.getAttribute('data-priority'),
-                    status: taskDiv.getAttribute('data-status'),
-                    deadline: taskDiv.getAttribute('data-deadline'),
-                    columnId: column.id 
-                });
-            });
-        });
-        localStorage.setItem('tasks', JSON.stringify(tasks));
-    }
-
-    function loadTasks() {
-        const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-        tasks.forEach(task => {
-            const taskDiv = document.createElement('div');
-            taskDiv.className = 'box';
-            taskDiv.setAttribute('data-title', task.title);
-            taskDiv.setAttribute('data-description', task.description);
-            taskDiv.setAttribute('data-assigned', task.assigned);
-            taskDiv.setAttribute('data-priority', task.priority);
-            taskDiv.setAttribute('data-status', task.status);
-            taskDiv.setAttribute('data-deadline', task.deadline);
-            taskDiv.setAttribute('draggable', 'true');
-            taskDiv.innerHTML = `<strong>${task.title}</strong><p>${task.description}</p>`;
-
-            const column = document.getElementById(task.status);
-            if (column) {
-                column.querySelector('.task-list-content').appendChild(taskDiv);
-
-                taskDiv.addEventListener('dragstart', () => {
-                    taskDiv.classList.add('is-dragging');
-                });
-
-                taskDiv.addEventListener('dragend', () => {
-                    taskDiv.classList.remove('is-dragging');
-                    saveTasks();
-                });
-
-                taskDiv.addEventListener('click', () => openEditModal(taskDiv));
-            }
-        });
     }
 });
